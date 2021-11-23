@@ -340,6 +340,7 @@ class MultiLayerNetwork(object):
         self._layers.append(LinearLayer(input_dim, neurons[0]))
         for i in range(0, len(neurons) - 1):
             layer = LinearLayer(neurons[i], neurons[i + 1])
+            print(self.activations[i])
             self._layers.append(layer)
         #######################################################################
         #                       ** END OF YOUR CODE **
@@ -469,7 +470,7 @@ class Trainer(object):
         #######################################################################
         #                       ** START OF YOUR CODE **
         #######################################################################
-        self._loss_layer = None
+        self._loss_layer = MSELossLayer() if self.loss_fun == "mse" else CrossEntropyLossLayer()
         #######################################################################
         #                       ** END OF YOUR CODE **
         #######################################################################
@@ -492,7 +493,8 @@ class Trainer(object):
         #######################################################################
         #                       ** START OF YOUR CODE **
         #######################################################################
-        pass
+        id_shuffled = np.random.permutation(len(input_dataset))
+        return (input_dataset[id_shuffled], target_dataset[id_shuffled])
 
         #######################################################################
         #                       ** END OF YOUR CODE **
