@@ -254,7 +254,7 @@ class LinearLayer(Layer):
         #                       ** START OF YOUR CODE **
         #######################################################################
         self._cache_current = x
-        return x @ self._grad_W_current + self._grad_b_current
+        return x @ self._W + self._b
 
         #######################################################################
         #                       ** END OF YOUR CODE **
@@ -277,7 +277,9 @@ class LinearLayer(Layer):
         #######################################################################
         #                       ** START OF YOUR CODE **
         #######################################################################
-        pass
+        self._grad_W_current = self._cache_current.T @ grad_z
+        self._grad_b_current = np.sum(grad_z, axis=0)
+        return grad_z @ self._W.T
 
         #######################################################################
         #                       ** END OF YOUR CODE **
@@ -294,7 +296,8 @@ class LinearLayer(Layer):
         #######################################################################
         #                       ** START OF YOUR CODE **
         #######################################################################
-        pass
+        self._W = self._W - learning_rate * self._grad_W_current
+        self._b = self._b - learning_rate * self._grad_b_current
 
         #######################################################################
         #                       ** END OF YOUR CODE **
