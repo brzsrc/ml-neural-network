@@ -179,7 +179,7 @@ class ReluLayer(Layer):
         #                       ** START OF YOUR CODE **
         #######################################################################
 
-        self._cache_current = x if x > 0 else 0
+        self._cache_current = x if np.all(x > 0) else np.zeros(x.shape)
         # if x > 0, return x; else return 0
         # res = x if x > 0 else 0
         return self._cache_current
@@ -205,7 +205,7 @@ class ReluLayer(Layer):
         #######################################################################
         #                       ** START OF YOUR CODE **
         #######################################################################
-        derive = 1 if self._cache_current > 0 else 0
+        derive = 1 if np.all(self._cache_current > 0) else 0
         return grad_z * derive
 
         #######################################################################
