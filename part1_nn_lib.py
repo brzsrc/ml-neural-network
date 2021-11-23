@@ -360,10 +360,10 @@ class MultiLayerNetwork(object):
         #                       ** START OF YOUR CODE **
         #######################################################################
         # return np.zeros((1, self.neurons[-1])) 
-        input_array = x
-        for layer in self._layers:
-            input_array = layer.forward(input_array)
-        return input_array
+        array = x
+        for i in range(self._layers):
+            array = self.activations[i].forward(self._layers[i].forward(array))
+        return array
             
         #######################################################################
         #                       ** END OF YOUR CODE **
@@ -388,8 +388,8 @@ class MultiLayerNetwork(object):
         #                       ** START OF YOUR CODE **
         #######################################################################
         grad = grad_z
-        for layer in self._layers:
-            grad = layer.backward(grad)
+        for i in range(len(self._layers - 1), -1, -1):
+            grad = self.activations[i].backward(self._layers.backward(grad))
         return grad
 
         #######################################################################
