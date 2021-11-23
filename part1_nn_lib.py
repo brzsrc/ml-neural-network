@@ -389,8 +389,9 @@ class MultiLayerNetwork(object):
         #                       ** START OF YOUR CODE **
         #######################################################################
         grad = grad_z
-        for i in range(len(self._layers - 1), -1, -1):
-            grad = self.activations[i].backward(self._layers.backward(grad))
+        for i in range(len(self._layers) - 1, -1, -1):
+            activation = SigmoidLayer() if self.activations[i] == "sigmoid" else ReluLayer()
+            grad = activation.backward(self._layers[i].backward(grad))
         return grad
 
         #######################################################################
@@ -523,7 +524,19 @@ class Trainer(object):
         #######################################################################
         #                       ** START OF YOUR CODE **
         #######################################################################
-        pass
+        for epoch in range(self.nb_epoch):
+            if self.shuffle_flag is True:
+                (shuffled_input_ds, shuffled_target_ds) = self.shuffle(input_dataset, target_dataset)
+            len = len(shuffled_input_ds)
+            size = len / self.batch_size if len % self.batch_size == 0 else len / self.batch_size + 1
+            batches = np.split(shuffled_input_ds, size, axis=0)
+            targets = np.split(shuffled_target_ds, size, axis=0)
+            for i in len(batches):
+                output = self.network(batches[i])
+                loss = self._loss_layer.forward(output, targets[i])
+                self.network.backward(loss)
+                self.network.update_params(self.learning_rate)
+
 
         #######################################################################
         #                       ** END OF YOUR CODE **
