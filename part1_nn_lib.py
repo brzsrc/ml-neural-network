@@ -120,7 +120,8 @@ class SigmoidLayer(Layer):
         #######################################################################
         #                       ** START OF YOUR CODE **
         #######################################################################
-        pass
+        self._cache_current = 1.0 / (1.0 + np.exp(-x))
+        return self._cache_current
 
         #######################################################################
         #                       ** END OF YOUR CODE **
@@ -143,7 +144,7 @@ class SigmoidLayer(Layer):
         #######################################################################
         #                       ** START OF YOUR CODE **
         #######################################################################
-        pass
+        return grad_z * self._cache_current * (1 - self._cache_current)
 
         #######################################################################
         #                       ** END OF YOUR CODE **
@@ -226,8 +227,8 @@ class LinearLayer(Layer):
         #######################################################################
         #                       ** START OF YOUR CODE **
         #######################################################################
-        self._W = None
-        self._b = None
+        self._W = xavier_init((n_in, n_out))
+        self._b = xavier_init((n_out))
 
         self._cache_current = None
         self._grad_W_current = None
