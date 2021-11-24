@@ -344,7 +344,6 @@ class MultiLayerNetwork(object):
             self._layers.append(layer)
 
         
-        
         #######################################################################
         #                       ** END OF YOUR CODE **
         #######################################################################
@@ -367,7 +366,7 @@ class MultiLayerNetwork(object):
         array = x
         for i in range(len(self._layers)):
             act_fwrd = lambda x:x
-            if self.activations[i]=="sigmoid":
+            if self.activations[i] == "sigmoid":
                 act_fwrd = SigmoidLayer().forward
             elif self.activations[i] == "relu":
                 act_fwrd = ReluLayer().forward 
@@ -401,11 +400,12 @@ class MultiLayerNetwork(object):
         grad = grad_z
         for i in range(len(self._layers) - 1, -1, -1):
             act_bwrd = lambda x:x
-            if self.activations[i]=="sigmoid":
+            if self.activations[i] == "sigmoid":
                 act_bwrd = SigmoidLayer().backward
             elif self.activations[i] == "relu":
                 act_bwrd = ReluLayer().backward 
-            grad = act_bwrd(self._layers[i].backward(grad))
+            # grad = act_bwrd(self._layers[i].backward(grad)) 
+            grad = self._layers[i].backward(act_bwrd(grad))
         return grad
 
         #######################################################################
