@@ -556,7 +556,18 @@ class Trainer(object):
         #######################################################################
         #                       ** START OF YOUR CODE **
         #######################################################################
-        pass
+        totalLoss = 0
+        length = len(target_dataset)
+        currIndex = 0
+        while (currIndex < length):
+            endIndex = min(length, currIndex + self.batch_size)
+            batch = input_dataset[currIndex:endIndex, :]
+            target = target_dataset[currIndex:endIndex]
+            pred = self.network(batch)
+            totalLoss += (endIndex - currIndex) * self._loss_layer.forward(pred, target)
+            currIndex = endIndex
+        
+        return totalLoss / length
 
         #######################################################################
         #                       ** END OF YOUR CODE **
