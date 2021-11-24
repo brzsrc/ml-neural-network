@@ -343,6 +343,11 @@ class MultiLayerNetwork(object):
             layer = LinearLayer(neurons[i], neurons[i + 1])
             self._layers.append(layer)
 
+            if self.activations[i] == "sigmoid":
+                self._layers.append(SigmoidLayer())
+            elif self.activations[i] == "relu":
+                self._layers.append(ReluLayer())
+
         
         #######################################################################
         #                       ** END OF YOUR CODE **
@@ -363,17 +368,21 @@ class MultiLayerNetwork(object):
         #                       ** START OF YOUR CODE **
         #######################################################################
         # return np.zeros((1, self.neurons[-1])) 
-        array = x
-        for i in range(len(self._layers)):
-            act_fwrd = lambda x:x
-            if self.activations[i] == "sigmoid":
-                act_fwrd = SigmoidLayer().forward
-            elif self.activations[i] == "relu":
-                act_fwrd = ReluLayer().forward 
+        # array = self._layers[0].forward(x)
+        # for i in range(1, len(self._layers)):
+        #     act_fwrd = lambda x:x
+        #     if self.activations[i] == "sigmoid":
+        #         act_fwrd = SigmoidLayer().forward
+        #     elif self.activations[i] == "relu":
+        #         act_fwrd = ReluLayer().forward 
         
-            # array = act_fwrd(self._layers[i].forward(array))
-            array = self._layers[i].forward(act_fwrd(array))
-            print(array)
+        #     array = act_fwrd(self._layers[i].forward(array))
+        #     # array = self._layers[i].forward(act_fwrd(array))
+        #     print(array)
+        # return array
+        array = x 
+        for layer in self._layers:
+            array = layer.forward(array)
         return array
             
         #######################################################################
@@ -399,15 +408,19 @@ class MultiLayerNetwork(object):
         #                       ** START OF YOUR CODE **
         #######################################################################
         grad = grad_z
+        # for i in range(len(self._layers) - 1, -1, -1):
+        #     act_bwrd = lambda x:x
+        #     if self.activations[i - 1] == "sigmoid":
+        #         act_bwrd = SigmoidLayer().backward
+        #     elif self.activations[i - 1] == "relu":
+        #         act_bwrd = ReluLayer().backward 
+        #     grad = act_bwrd(self._layers[i].backward(grad)) 
+        #     # grad = self._layers[i].backward(act_bwrd(grad))
+        # return grad
         for i in range(len(self._layers) - 1, -1, -1):
-            act_bwrd = lambda x:x
-            if self.activations[i] == "sigmoid":
-                act_bwrd = SigmoidLayer().backward
-            elif self.activations[i] == "relu":
-                act_bwrd = ReluLayer().backward 
-            grad = act_bwrd(self._layers[i].backward(grad)) 
-            # grad = self._layers[i].backward(act_bwrd(grad))
+            grad = self._layers[i].backward(grad)
         return grad
+
 
         #######################################################################
         #                       ** END OF YOUR CODE **
