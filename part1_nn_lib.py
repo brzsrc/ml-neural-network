@@ -371,7 +371,8 @@ class MultiLayerNetwork(object):
             elif self.activations[i] == "relu":
                 act_fwrd = ReluLayer().forward 
         
-            array = act_fwrd(self._layers[i].forward(array))
+            # array = act_fwrd(self._layers[i].forward(array))
+            array = self._layers[i].forward(act_fwrd(array))
             print(array)
         return array
             
@@ -404,8 +405,8 @@ class MultiLayerNetwork(object):
                 act_bwrd = SigmoidLayer().backward
             elif self.activations[i] == "relu":
                 act_bwrd = ReluLayer().backward 
-            # grad = act_bwrd(self._layers[i].backward(grad)) 
-            grad = self._layers[i].backward(act_bwrd(grad))
+            grad = act_bwrd(self._layers[i].backward(grad)) 
+            # grad = self._layers[i].backward(act_bwrd(grad))
         return grad
 
         #######################################################################
@@ -635,7 +636,7 @@ class Preprocessor(object):
         #######################################################################
         #                       ** START OF YOUR CODE **
         #######################################################################
-        return (data - self.min) * (self.b - self.a) / (self.max - self.min)
+        return self.a + (data - self.min) * (self.b - self.a) / (self.max - self.min)
 
         #######################################################################
         #                       ** END OF YOUR CODE **
@@ -654,7 +655,7 @@ class Preprocessor(object):
         #######################################################################
         #                       ** START OF YOUR CODE **
         #######################################################################
-        return data * (self.max - self.min) / (self.b - self.a) + self.min
+        return (data - self.a) * (self.max - self.min) / (self.b - self.a) + self.min
 
         #######################################################################
         #                       ** END OF YOUR CODE **
