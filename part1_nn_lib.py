@@ -205,6 +205,7 @@ class ReluLayer(Layer):
         #######################################################################
         #                       ** START OF YOUR CODE **
         #######################################################################
+        print(self._cache_current)
         derive = 1 if np.all(self._cache_current > 0) else 0
         return grad_z * derive
 
@@ -370,9 +371,9 @@ class MultiLayerNetwork(object):
                 act_fwrd = SigmoidLayer().forward
             elif self.activations[i] == "relu":
                 act_fwrd = ReluLayer().forward 
-            #activation = SigmoidLayer() if self.activations[i] == "sigmoid" else ReluLayer()
         
             array = act_fwrd(self._layers[i].forward(array))
+            print(array)
         return array
             
         #######################################################################
@@ -399,8 +400,12 @@ class MultiLayerNetwork(object):
         #######################################################################
         grad = grad_z
         for i in range(len(self._layers) - 1, -1, -1):
-            activation = SigmoidLayer() if self.activations[i] == "sigmoid" else ReluLayer()
-            grad = activation.backward(self._layers[i].backward(grad))
+            act_bwrd = lambda x:x
+            if self.activations[i]=="sigmoid":
+                act_bwrd = SigmoidLayer().backward
+            elif self.activations[i] == "relu":
+                act_bwrd = ReluLayer().backward 
+            grad = act_bwrd(self._layers[i].backward(grad))
         return grad
 
         #######################################################################
@@ -541,9 +546,13 @@ class Trainer(object):
             batches = np.split(shuffled_input_ds, size, axis=0)
             targets = np.split(shuffled_target_ds, size, axis=0)
             for i in range(len(batches)):
-                output = self.network(batches[i])
-                loss = self._loss_layer.forward(output, targets[i])
-                self.network.backward(loss)
+                #Output: array of shape (batch_size, n_out)
+                output = self.network.forward(batches[i])
+                self._loss_layer.forward(output, targets[i])
+                #grad_z {np.ndarray} -- Gradient array of shape (batch_size, n_out)
+                loss_grad = self._loss_layer.backward()
+                #print(loss_grad)
+                self.network.backward(loss_grad)
                 self.network.update_params(self.learning_rate)
 
 
