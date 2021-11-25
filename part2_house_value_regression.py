@@ -6,17 +6,19 @@ import pickle
 import numpy as np
 import pandas as pd
 from sklearn.preprocessing import LabelBinarizer
+from sklearn.metrics import mean_absolute_error
 
 pd.options.mode.chained_assignment = None  # default='warn'
 
+
 class Regressor():
 
-    def __init__(self, x, nb_epoch = 1000, model = None, criterion = None, optimiser = None):
+    def __init__(self, x, nb_epoch=1000, model=None, criterion=None, optimiser=None):
         # You can add any input parameters you need
         # Remember to set them with a default value for LabTS tests
         """ 
         Initialise the model.
-          
+
         Arguments:
             - x {pd.DataFrame} -- Raw input data of shape 
                 (batch_size, input_size), used to compute the size 
@@ -34,16 +36,16 @@ class Regressor():
         # Replace this code with your own
         self.x_preprocessor = None
         # self.y_preprocessor = None
-        self.label_dict = None 
-        X, _ = self._preprocessor(x, training = True)
+        self.label_dict = None
+        X, _ = self._preprocessor(x, training=True)
         self.input_size = X.shape[1]
         self.output_size = 1
         self.nb_epoch = nb_epoch
-        #the trained model
+        # the trained model
         self.model = model
-        #to update parameters[set lr]
+        # to update parameters[set lr]
         self.optimiser = optimiser
-        #the loss function
+        # the loss function
         self.criterion = criterion
         return
 
@@ -51,10 +53,10 @@ class Regressor():
         #                       ** END OF YOUR CODE **
         #######################################################################
 
-    def _preprocessor(self, x, y = None, training = False):
+    def _preprocessor(self, x, y=None, training=False):
         """ 
         Preprocess input of the network.
-          
+
         Arguments:
             - x {pd.DataFrame} -- Raw input array of shape 
                 (batch_size, input_size).
@@ -77,13 +79,13 @@ class Regressor():
         # Return preprocessed x and y, return None for y if it was None
         # return x, (y if isinstance(y, pd.DataFrame) else None)
         col_attributes = x.dtypes[x.dtypes != 'object'].index
-        
-        #fill NA with the mean value of the column
+
+        # fill NA with the mean value of the column
         x[col_attributes] = x[col_attributes].fillna(x[col_attributes].mean())
         x = x.values
         # print(x)
-        col = x[:,-1]
-        col_left = x[:,:-1]
+        col = x[:, -1]
+        col_left = x[:, :-1]
         # col_unique = list(np.unique(x[:,-1]))
         # lb = LabelBinarizer()
         # col_bin = lb.fit_transform(col_unique)
@@ -92,9 +94,9 @@ class Regressor():
         # col_final = np.concatenate((col_left, col_trans), axis=1)
 
         # preprocessor = Preprocessor(col_final)
-        
+
         if training:
-            col_unique = list(np.unique(x[:,-1]))
+            col_unique = list(np.unique(x[:, -1]))
             lb = LabelBinarizer()
             col_bin = lb.fit_transform(col_unique)
             self.label_dict = dict(zip(col_unique, col_bin))
@@ -109,7 +111,7 @@ class Regressor():
         data_x = data_x.astype(float)
         data_y = None
 
-         #fill NA with the mean value of the column
+        # fill NA with the mean value of the column
         if y is not None:
             y = y.fillna(y.mean())
             y = y.values
@@ -125,7 +127,6 @@ class Regressor():
         #                       ** END OF YOUR CODE **
         #######################################################################
 
-        
     def fit(self, x, y):
         """
         Regressor training function
@@ -143,7 +144,7 @@ class Regressor():
         #                       ** START OF YOUR CODE **
         #######################################################################
 
-        X, Y = self._preprocessor(x, y = y, training = True) # Do not forget
+        X, Y = self._preprocessor(x, y=y, training=True)  # Do not forget
         # print(X.dtype)
         # print("Y = ", Y)
         # X = X.astype(float)
@@ -154,27 +155,27 @@ class Regressor():
         self.criterion = torch.nn.MSELoss()
         self.model = LinearRegression((np.shape(X)[1]))
 
-        self.optimiser = torch.optim.SGD(self.model.parameters(), lr=0.01)
+        self.optimiser = torch.optim.SGD(self.model.parameters(), lr=0.001)
         for epoch in range(self.nb_epoch):
-            # Reset the gradients 
-            self.optimiser.zero_grad()   
+            # Reset the gradients
+            self.optimiser.zero_grad()
 
             #print("x_tain_tensor: ", x_train_tensor)
             # forward pass
-            y_hat = self.model.forward(x_train_tensor)
+            y_hat = self.model(x_train_tensor)
 
             # print("y_hat: ", y_hat)
             # print("y_train_tensor", y_train_tensor)
 
             # compute loss
-            loss = self.criterion(y_hat, y_train_tensor) 
+            loss = self.criterion(y_hat, y_train_tensor)
             # print("loss: ", loss)
 
             # Backward pass (compute the gradients)
             loss.backward()
 
             # update parameters
-            self.optimiser.step() 
+            self.optimiser.step()
 
             # print(f"Epoch: {epoch}\t w: {self.model.linear.weight.data[0]}\t b: {self.model.linear.bias.data[0]:.4f} \t L: {loss:.4f}")
         return self
@@ -183,7 +184,6 @@ class Regressor():
         #                       ** END OF YOUR CODE **
         #######################################################################
 
-            
     def predict(self, x):
         """
         Ouput the value corresponding to an input x.
@@ -201,10 +201,10 @@ class Regressor():
         #                       ** START OF YOUR CODE **
         #######################################################################
 
-        X, _ = self._preprocessor(x, training = False) # Do not forget
+        X, _ = self._preprocessor(x, training=False)  # Do not forget
         x_predicted_tensor = torch.from_numpy(X).float()
         # print(x_predicted_tensor)
-        y_predicted_tensor = self.model.forward(x_predicted_tensor)
+        y_predicted_tensor = self.model(x_predicted_tensor)
         # print(y_predicted_tensor)
         y_predicted = y_predicted_tensor.detach().numpy()
         # print(y_predicted)
@@ -232,20 +232,21 @@ class Regressor():
         #                       ** START OF YOUR CODE **
         #######################################################################
 
-        X, Y = self._preprocessor(x, y = y, training = False) # Do not forget
+        X, Y = self._preprocessor(x, y=y, training=False)  # Do not forget
         x_predicted_tensor = torch.from_numpy(X).float()
         y_validation_tensor = torch.from_numpy(Y).float()
         # print(x_predicted_tensor)
         y_predicted = self.model.forward(x_predicted_tensor)
-        loss = self.criterion(y_predicted, y_validation_tensor) 
-        return loss # Replace this code with your own
+        y_predicted = y_predicted.detach().numpy()
+        loss = mean_absolute_error(Y, y_predicted)
+        return loss  # Replace this code with your own
 
         #######################################################################
         #                       ** END OF YOUR CODE **
         #######################################################################
 
 
-def save_regressor(trained_model): 
+def save_regressor(trained_model):
     """ 
     Utility function to save the trained regressor model in part2_model.pickle.
     """
@@ -255,7 +256,7 @@ def save_regressor(trained_model):
     print("\nSaved model in part2_model.pickle\n")
 
 
-def load_regressor(): 
+def load_regressor():
     """ 
     Utility function to load the trained regressor model in part2_model.pickle.
     """
@@ -266,8 +267,7 @@ def load_regressor():
     return trained_model
 
 
-
-def RegressorHyperParameterSearch(): 
+def RegressorHyperParameterSearch():
     # Ensure to add whatever inputs you deem necessary to this function
     """
     Performs a hyper-parameter for fine-tuning the regressor implemented 
@@ -275,7 +275,7 @@ def RegressorHyperParameterSearch():
 
     Arguments:
         Add whatever inputs you need.
-        
+
     Returns:
         The function should return your optimised hyper-parameters. 
 
@@ -291,18 +291,27 @@ def RegressorHyperParameterSearch():
     #                       ** END OF YOUR CODE **
     #######################################################################
 
+
 class LinearRegression(nn.Module):
     def __init__(self, n_input_vars, n_output_vars=1):
-        super().__init__() # call constructor of superclass
+        super().__init__()  # call constructor of superclass
+        #self.hiddenlayer1 = nn.Linear(n_input_vars, 8)
+        #self.hiddenlayer2 = nn.Linear(8,5)
+        #self.output = nn.Linear(5,1)
         self.linear = nn.Linear(n_input_vars, n_output_vars)
 
     # def set(self, n_input_vars, n_output_vars=1):
     #     self.linear = nn.Linear(n_input_vars, n_output_vars)
-        
+
     def forward(self, x):
         # print("x: ", x)
         # print(self.linear(x))
+        #h1 = torch.relu(self.hiddenlayer1(x))
+        #h2 = torch.relu(self.hiddenlayer2(h1))
+        #output = torch.relu(self.output(h2))
+        # return output
         return self.linear(x)
+
 
 def example_main():
 
@@ -311,32 +320,35 @@ def example_main():
     # Use pandas to read CSV data as it contains various object types
     # Feel free to use another CSV reader tool
     # But remember that LabTS tests take Pandas Dataframe as inputs
-    data = pd.read_csv("housing.csv") 
+    data = pd.read_csv("housing.csv")
 
     # Spliting input and output
-    x_train = data.loc[:, data.columns != output_label]
-    y_train = data.loc[:, [output_label]]
+    x = data.loc[:, data.columns != output_label]
+    y = data.loc[:, [output_label]]
 
+    from sklearn.model_selection import train_test_split
+    x_train, x_test, y_train, y_test = train_test_split(x, y,
+                                                        test_size=0.2,
+                                                        random_state=0)
     # criterion = torch.nn.MSELoss()
-    #criterion = torch.nn.MSELoss(reduction="sum") # for SSE
+    # criterion = torch.nn.MSELoss(reduction="sum") # for SSE
     # model = LinearRegression()
     # optimiser = torch.optim.SGD(model.parameters(), lr=0.0001)
 
     # Training
-    # This example trains on the whole available dataset. 
-    # You probably want to separate some held-out data 
+    # This example trains on the whole available dataset.
+    # You probably want to separate some held-out data
     # to make sure the model isn't overfitting
     # regressor = Regressor(x, nb_epoch = 10, model = model, criterion = criterion, optimiser = optimiser)
-    regressor = Regressor(x_train, nb_epoch = 10)
+    regressor = Regressor(x_train, nb_epoch=5000)
     regressor.fit(x_train, y_train)
     save_regressor(regressor)
 
-    regressor.predict(x_train)
+#    regressor.predict(x_train)
     # Error
-    error = regressor.score(x_train, y_train)
+    error = regressor.score(x_test, y_test)
     print("\nRegressor error: {}\n".format(error))
 
 
 if __name__ == "__main__":
     example_main()
-
