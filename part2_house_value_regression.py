@@ -153,8 +153,7 @@ class Regressor():
         y_train_tensor = torch.from_numpy(Y).float()
 
         self.criterion = torch.nn.MSELoss()
-        self.model = LinearRegression((np.shape(X)[1]))
-
+        self.model = LinearRegression(np.shape(X)[1], neurons=[16, 20, 5, 1], activations=["relu", "relu", "relu", "relu"])
         self.optimiser = torch.optim.SGD(self.model.parameters(), lr=0.001)
         for epoch in range(self.nb_epoch):
             # Reset the gradients
@@ -293,12 +292,32 @@ def RegressorHyperParameterSearch():
 
 
 class LinearRegression(nn.Module):
-    def __init__(self, n_input_vars, n_output_vars=1):
+    def __init__(self, n_input_vars, neurons=None, activations=None):
         super().__init__()  # call constructor of superclass
-        #self.hiddenlayer1 = nn.Linear(n_input_vars, 8)
-        #self.hiddenlayer2 = nn.Linear(8,5)
-        #self.output = nn.Linear(5,1)
-        self.linear = nn.Linear(n_input_vars, n_output_vars)
+        # self.hiddenlayer1 = nn.Linear(n_input_vars, 16)
+        # self.hiddenlayer2 = nn.Linear(16,20)
+        # self.hiddenlayer3 = nn.Linear(20,5)
+        # self.output = nn.Linear(5,1)
+        # self.linear = nn.Linear(n_input_vars, n_output_vars)
+
+        """
+        - neurons {list} -- Number of neurons in each linear layer 
+                represented as a list. The length of the list determines the 
+                number of linear layers.
+        - activations {list} -- List of the activation functions to apply 
+                to the output of each linear layer.
+        """
+        self.neurons = neurons
+        self.activations = activations
+
+        self.layers = nn.ModuleList()
+        # The first layer should between the input and the first neuron
+        self.layers.append(nn.Linear(n_input_vars, self.neurons[0]))
+        for i in range(len(neurons) - 1):
+            layer = nn.Linear(neurons[i], neurons[i + 1])
+            self.layers.append(layer)
+        # print(self.layers)
+
 
     # def set(self, n_input_vars, n_output_vars=1):
     #     self.linear = nn.Linear(n_input_vars, n_output_vars)
@@ -306,11 +325,21 @@ class LinearRegression(nn.Module):
     def forward(self, x):
         # print("x: ", x)
         # print(self.linear(x))
-        #h1 = torch.relu(self.hiddenlayer1(x))
-        #h2 = torch.relu(self.hiddenlayer2(h1))
-        #output = torch.relu(self.output(h2))
-        # return output
-        return self.linear(x)
+        # h1 = torch.relu(self.hiddenlayer1(x))
+        # h2 = torch.relu(self.hiddenlayer2(h1))
+        # h3 = torch.relu(self.hiddenlayer3(h2))
+        # output = torch.relu(self.output(h3))
+
+        output = x
+        for i in range(len(self.layers)):
+            # Add activation layer if exist
+            if self.activations[i] == "sigmoid":
+                output = torch.sigmoid(self.layers[i](output))
+            elif self.activations[i] == "relu":
+                output = torch.relu(self.layers[i](output))
+
+        return output
+        # return self.linear(x)
 
 
 def example_main():
