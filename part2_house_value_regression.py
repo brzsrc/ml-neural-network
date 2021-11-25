@@ -187,7 +187,12 @@ class Regressor():
         #######################################################################
 
         X, _ = self._preprocessor(x, training = False) # Do not forget
-        pass
+        x_predicted_tensor = torch.from_numpy(X).float()
+        print(x_predicted_tensor)
+        y_predicted = self.model.forward(x_predicted_tensor)
+        # print(y_predicted)
+        # print(torch.nan_to_num(y_predicted))
+        return y_predicted
 
         #######################################################################
         #                       ** END OF YOUR CODE **
@@ -303,6 +308,7 @@ def example_main():
     regressor.fit(x_train, y_train)
     save_regressor(regressor)
 
+    # regressor.predict(x_train)
     # Error
     error = regressor.score(x_train, y_train)
     print("\nRegressor error: {}\n".format(error))
