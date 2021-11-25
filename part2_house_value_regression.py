@@ -7,6 +7,8 @@ import numpy as np
 import pandas as pd
 from sklearn.preprocessing import LabelBinarizer
 
+pd.options.mode.chained_assignment = None  # default='warn'
+
 class Regressor():
 
     def __init__(self, x, nb_epoch = 1000, model = None, criterion = None, optimiser = None):
@@ -65,7 +67,6 @@ class Regressor():
               size (batch_size, input_size).
             - {torch.tensor} or {numpy.ndarray} -- Preprocessed target array of
               size (batch_size, 1).
-
         """
 
         #######################################################################
@@ -75,7 +76,6 @@ class Regressor():
         # Replace this code with your own
         # Return preprocessed x and y, return None for y if it was None
         # return x, (y if isinstance(y, pd.DataFrame) else None)
-
         col_attributes = x.dtypes[x.dtypes != 'object'].index
         
         #fill NA with the mean value of the column
