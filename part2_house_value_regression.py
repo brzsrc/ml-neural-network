@@ -79,7 +79,7 @@ class Regressor():
         col_attributes = x.dtypes[x.dtypes != 'object'].index
         
         #fill NA with the mean value of the column
-        x[col_attributes].fillna(x[col_attributes].mean())
+        x[col_attributes] = x[col_attributes].fillna(x[col_attributes].mean())
         x = x.values
         # print(x)
         col = x[:,-1]
@@ -111,7 +111,7 @@ class Regressor():
 
          #fill NA with the mean value of the column
         if y is not None:
-            y.fillna(y.mean())
+            y = y.fillna(y.mean())
             y = y.values
             # print("y:", y)
             self.y_preprocessor = Preprocessor(y)
