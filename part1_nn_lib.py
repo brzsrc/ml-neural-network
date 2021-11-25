@@ -180,8 +180,6 @@ class ReluLayer(Layer):
         #######################################################################
 
         self._cache_current = x if np.all(x > 0) else np.zeros(x.shape)
-        # if x > 0, return x; else return 0
-        # res = x if x > 0 else 0
         return self._cache_current
 
         #######################################################################
@@ -205,7 +203,6 @@ class ReluLayer(Layer):
         #######################################################################
         #                       ** START OF YOUR CODE **
         #######################################################################
-        print(self._cache_current)
         derive = 1 if np.all(self._cache_current > 0) else 0
         return grad_z * derive
 
@@ -233,6 +230,7 @@ class LinearLayer(Layer):
         #######################################################################
         #                       ** START OF YOUR CODE **
         #######################################################################
+        # initialize w and b by the provided xavier_init function
         self._W = xavier_init((n_in, n_out))
         self._b = xavier_init((n_out))
 
@@ -338,11 +336,12 @@ class MultiLayerNetwork(object):
         #                       ** START OF YOUR CODE **
         #######################################################################
         self._layers = []
+        # The first layer should between the input and the first neuron
         self._layers.append(LinearLayer(input_dim, neurons[0]))
         for i in range(len(neurons) - 1):
             layer = LinearLayer(neurons[i], neurons[i + 1])
             self._layers.append(layer)
-
+            # Add activation layer if exist
             if self.activations[i] == "sigmoid":
                 self._layers.append(SigmoidLayer())
             elif self.activations[i] == "relu":
@@ -367,21 +366,9 @@ class MultiLayerNetwork(object):
         #######################################################################
         #                       ** START OF YOUR CODE **
         #######################################################################
-        # return np.zeros((1, self.neurons[-1])) 
-        # array = self._layers[0].forward(x)
-        # for i in range(0, len(self._layers)):
-        #     act_fwrd = lambda x:x
-        #     if self.activations[i] == "sigmoid":
-        #         act_fwrd = SigmoidLayer().forward
-        #     elif self.activations[i] == "relu":
-        #         act_fwrd = ReluLayer().forward 
-        
-        #     array = act_fwrd(self._layers[i].forward(array))
-        #     # array = self._layers[i].forward(act_fwrd(array))
-        #     print(array)
-        # return array
         array = x 
         for layer in self._layers:
+            # apply forward method to every layer
             array = layer.forward(array)
         return array
             
@@ -408,19 +395,10 @@ class MultiLayerNetwork(object):
         #                       ** START OF YOUR CODE **
         #######################################################################
         grad = grad_z
-        # for i in range(len(self._layers) - 1, -1, -1):
-        #     act_bwrd = lambda x:x
-        #     if self.activations[i - 1] == "sigmoid":
-        #         act_bwrd = SigmoidLayer().backward
-        #     elif self.activations[i - 1] == "relu":
-        #         act_bwrd = ReluLayer().backward 
-        #     #grad = act_bwrd(self._layers[i].backward(grad)) 
-        #     grad = self._layers[i].backward(act_bwrd(grad))
-        # return grad
         for i in range(len(self._layers) - 1, -1, -1):
+            # apply backward method to every layer
             grad = self._layers[i].backward(grad)
         return grad
-
 
         #######################################################################
         #                       ** END OF YOUR CODE **
@@ -438,6 +416,7 @@ class MultiLayerNetwork(object):
         #                       ** START OF YOUR CODE **
         #######################################################################
         for layer in self._layers:
+            # update parameters by the given learning rate
             layer.update_params(learning_rate)
 
         #######################################################################
@@ -553,41 +532,27 @@ class Trainer(object):
         #                       ** START OF YOUR CODE **
         #######################################################################
         for epoch in range(self.nb_epoch):
-            # print('input before: ', input_dataset)
             if self.shuffle_flag:
                 shuffled_input_ds, shuffled_target_ds = self.shuffle(input_dataset, target_dataset)
                 input_dataset = shuffled_input_ds
                 target_dataset = shuffled_target_ds
-            # print('input after: ', input_dataset)
             len_ = len(input_dataset)
             currIndex = 0
+            # We need to increment the index in every loop to represent every batch.
             while (currIndex < len_):
 
+                # To make sure we won't exceed the length of the input dataset
                 endIndex = min(len_, currIndex + self.batch_size)
                 batch = input_dataset[currIndex:endIndex, :]
                 target = target_dataset[currIndex:endIndex]
-                output = self.network.forward(batch)
+                # Get the predictions
+                output = self.network(batch)
                 self._loss_layer.forward(output, target)
                 loss_grad = self._loss_layer.backward()
                 self.network.backward(loss_grad)
                 self.network.update_params(self.learning_rate)
 
                 currIndex = endIndex
-            # size = len_ / self.batch_size if len_ % self.batch_size == 0 else len_ / self.batch_size + 1
-            # print(size)
-            # print(len_)
-            # batches = np.split(input_dataset, size, axis=0)
-            # targets = np.split(target_dataset, size, axis=0)
-            # # print(len(batches))
-            # for i in range(len(batches)):
-            #     #Output: array of shape (batch_size, n_out)
-            #     output = self.network.forward(batches[i])
-            #     self._loss_layer.forward(output, targets[i])
-            #     #grad_z {np.ndarray} -- Gradient array of shape (batch_size, n_out)
-            #     loss_grad = self._loss_layer.backward()
-            #     #print(loss_grad)
-            #     self.network.backward(loss_grad)
-            #     self.network.update_params(self.learning_rate)
 
 
         #######################################################################
@@ -610,32 +575,17 @@ class Trainer(object):
         #######################################################################
 
         totalLoss = 0
-        length = len(target_dataset)
+        length = len(input_dataset)
         currIndex = 0
-
-        # len_ = len(input_dataset)
-        # size = len_ / self.batch_size if len_ % self.batch_size == 0 else len_ / self.batch_size + 1
-        # print(size)
-        # print(self.batch_size)
-        # print(len(input_dataset))
-        # batches = np.split(input_dataset, size, axis=0)
-        # targets = np.split(target_dataset, size, axis=0)
-
-        # for i in range(len(batches)):
-        #     pred = self.network(batches[i])
-        #     loss = self._loss_layer.forward(pred, targets[i])
-        #     totalLoss += len(batches[i]) * loss
-            # loss_grad = self._loss_layer.backward()
-            # #print(loss_grad)
-            # self.network.backward(loss_grad)
-            # self.network.update_params(self.learning_rate)
-
         
         while (currIndex < length):
+            # To make sure we won't exceed the length of the input dataset
             endIndex = min(length, currIndex + self.batch_size)
             batch = input_dataset[currIndex:endIndex, :]
             target = target_dataset[currIndex:endIndex]
+            # Get the predictions
             pred = self.network(batch)
+            # Add to the total loss
             totalLoss += (endIndex - currIndex) * self._loss_layer.forward(pred, target)
             currIndex = endIndex
         
@@ -666,6 +616,7 @@ class Preprocessor(object):
         #######################################################################
         self.max = np.max(data, axis=0)
         self.min = np.min(data, axis=0)
+        # We scaling the smallest value to 0 and the largest value to 1, which is a and b respectively
         self.a = 0
         self.b = 1
 
