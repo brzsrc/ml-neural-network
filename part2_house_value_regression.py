@@ -168,7 +168,7 @@ class Regressor():
 
             # compute loss
             loss = self.criterion(y_hat, y_train_tensor) 
-            #print("loss: ", loss)
+            # print("loss: ", loss)
 
             # Backward pass (compute the gradients)
             loss.backward()
@@ -232,7 +232,12 @@ class Regressor():
         #######################################################################
 
         X, Y = self._preprocessor(x, y = y, training = False) # Do not forget
-        return 0 # Replace this code with your own
+        x_predicted_tensor = torch.from_numpy(X).float()
+        y_validation_tensor = torch.from_numpy(Y).float()
+        # print(x_predicted_tensor)
+        y_predicted = self.model.forward(x_predicted_tensor)
+        loss = self.criterion(y_predicted, y_validation_tensor) 
+        return loss # Replace this code with your own
 
         #######################################################################
         #                       ** END OF YOUR CODE **
