@@ -523,7 +523,7 @@ class Trainer(object):
         #                       ** START OF YOUR CODE **
         #######################################################################
         id_shuffled = np.random.permutation(len(input_dataset))
-        return input_dataset[id_shuffled], target_dataset[id_shuffled]
+        return input_dataset[id_shuffled, :], target_dataset[id_shuffled]
 
         #######################################################################
         #                       ** END OF YOUR CODE **
@@ -553,23 +553,41 @@ class Trainer(object):
         #                       ** START OF YOUR CODE **
         #######################################################################
         for epoch in range(self.nb_epoch):
+            # print('input before: ', input_dataset)
             if self.shuffle_flag:
                 shuffled_input_ds, shuffled_target_ds = self.shuffle(input_dataset, target_dataset)
                 input_dataset = shuffled_input_ds
                 target_dataset = shuffled_target_ds
+            # print('input after: ', input_dataset)
             len_ = len(input_dataset)
-            size = len_ / self.batch_size if len_ % self.batch_size == 0 else len_ / self.batch_size + 1
-            batches = np.split(input_dataset, size, axis=0)
-            targets = np.split(target_dataset, size, axis=0)
-            for i in range(len(batches)):
-                #Output: array of shape (batch_size, n_out)
-                output = self.network.forward(batches[i])
-                self._loss_layer.forward(output, targets[i])
-                #grad_z {np.ndarray} -- Gradient array of shape (batch_size, n_out)
+            currIndex = 0
+            while (currIndex < len_):
+
+                endIndex = min(len_, currIndex + self.batch_size)
+                batch = input_dataset[currIndex:endIndex, :]
+                target = target_dataset[currIndex:endIndex]
+                output = self.network.forward(batch)
+                self._loss_layer.forward(output, target)
                 loss_grad = self._loss_layer.backward()
-                #print(loss_grad)
                 self.network.backward(loss_grad)
                 self.network.update_params(self.learning_rate)
+
+                currIndex = endIndex
+            # size = len_ / self.batch_size if len_ % self.batch_size == 0 else len_ / self.batch_size + 1
+            # print(size)
+            # print(len_)
+            # batches = np.split(input_dataset, size, axis=0)
+            # targets = np.split(target_dataset, size, axis=0)
+            # # print(len(batches))
+            # for i in range(len(batches)):
+            #     #Output: array of shape (batch_size, n_out)
+            #     output = self.network.forward(batches[i])
+            #     self._loss_layer.forward(output, targets[i])
+            #     #grad_z {np.ndarray} -- Gradient array of shape (batch_size, n_out)
+            #     loss_grad = self._loss_layer.backward()
+            #     #print(loss_grad)
+            #     self.network.backward(loss_grad)
+            #     self.network.update_params(self.learning_rate)
 
 
         #######################################################################
@@ -590,10 +608,29 @@ class Trainer(object):
         #######################################################################
         #                       ** START OF YOUR CODE **
         #######################################################################
+
         totalLoss = 0
         length = len(target_dataset)
         currIndex = 0
 
+        # len_ = len(input_dataset)
+        # size = len_ / self.batch_size if len_ % self.batch_size == 0 else len_ / self.batch_size + 1
+        # print(size)
+        # print(self.batch_size)
+        # print(len(input_dataset))
+        # batches = np.split(input_dataset, size, axis=0)
+        # targets = np.split(target_dataset, size, axis=0)
+
+        # for i in range(len(batches)):
+        #     pred = self.network(batches[i])
+        #     loss = self._loss_layer.forward(pred, targets[i])
+        #     totalLoss += len(batches[i]) * loss
+            # loss_grad = self._loss_layer.backward()
+            # #print(loss_grad)
+            # self.network.backward(loss_grad)
+            # self.network.update_params(self.learning_rate)
+
+        
         while (currIndex < length):
             endIndex = min(length, currIndex + self.batch_size)
             batch = input_dataset[currIndex:endIndex, :]
