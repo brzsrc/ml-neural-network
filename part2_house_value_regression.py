@@ -1,7 +1,9 @@
+from part1_nn_lib import Preprocessor
 import torch
 import pickle
 import numpy as np
 import pandas as pd
+from sklearn.preprocessing import LabelBinarizer
 
 class Regressor():
 
@@ -17,6 +19,8 @@ class Regressor():
                 of the network.
             - nb_epoch {int} -- number of epoch to train the network.
 
+            input_size == # of features
+
         """
 
         #######################################################################
@@ -24,10 +28,12 @@ class Regressor():
         #######################################################################
 
         # Replace this code with your own
+        self.preprocessor = None
+        self.label_dict = None 
         X, _ = self._preprocessor(x, training = True)
         self.input_size = X.shape[1]
         self.output_size = 1
-        self.nb_epoch = nb_epoch 
+        self.nb_epoch = nb_epoch
         return
 
         #######################################################################
@@ -59,7 +65,43 @@ class Regressor():
 
         # Replace this code with your own
         # Return preprocessed x and y, return None for y if it was None
-        return x, (y if isinstance(y, pd.DataFrame) else None)
+        # return x, (y if isinstance(y, pd.DataFrame) else None)
+
+        #fill NA with sth
+        if y is not None:
+            y.fillna(0)
+            y = y.values
+
+        #fill NA with sth
+        x.fillna(0)
+        x = x.values
+        col = x[:,-1]
+        col_left = x[:,:-1]
+        # col_unique = list(np.unique(x[:,-1]))
+        # lb = LabelBinarizer()
+        # col_bin = lb.fit_transform(col_unique)
+        # col_dict = dict(zip(col_unique, col_bin))
+        # col_trans = [col_dict[elem] for elem in col]
+        # col_final = np.concatenate((col_left, col_trans), axis=1)
+
+        # preprocessor = Preprocessor(col_final)
+        
+        if training:
+            col_unique = list(np.unique(x[:,-1]))
+            lb = LabelBinarizer()
+            col_bin = lb.fit_transform(col_unique)
+            self.label_dict = dict(zip(col_unique, col_bin))
+            col_trans = [self.label_dict[elem] for elem in col]
+            col_final = np.concatenate((col_left, col_trans), axis=1)
+            self.preprocessor = Preprocessor(col_final)
+        else:
+            col_trans = [self.label_dict[elem] for elem in col]
+            col_final = np.concatenate((col_left, col_trans), axis=1)
+
+        data = self.preprocessor.apply(col_final)
+        # print(data)
+        # print(y)
+        return data, y
 
         #######################################################################
         #                       ** END OF YOUR CODE **

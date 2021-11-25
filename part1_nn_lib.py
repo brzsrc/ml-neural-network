@@ -369,7 +369,7 @@ class MultiLayerNetwork(object):
         #######################################################################
         # return np.zeros((1, self.neurons[-1])) 
         # array = self._layers[0].forward(x)
-        # for i in range(1, len(self._layers)):
+        # for i in range(0, len(self._layers)):
         #     act_fwrd = lambda x:x
         #     if self.activations[i] == "sigmoid":
         #         act_fwrd = SigmoidLayer().forward
@@ -414,8 +414,8 @@ class MultiLayerNetwork(object):
         #         act_bwrd = SigmoidLayer().backward
         #     elif self.activations[i - 1] == "relu":
         #         act_bwrd = ReluLayer().backward 
-        #     grad = act_bwrd(self._layers[i].backward(grad)) 
-        #     # grad = self._layers[i].backward(act_bwrd(grad))
+        #     #grad = act_bwrd(self._layers[i].backward(grad)) 
+        #     grad = self._layers[i].backward(act_bwrd(grad))
         # return grad
         for i in range(len(self._layers) - 1, -1, -1):
             grad = self._layers[i].backward(grad)
@@ -523,7 +523,7 @@ class Trainer(object):
         #                       ** START OF YOUR CODE **
         #######################################################################
         id_shuffled = np.random.permutation(len(input_dataset))
-        return (input_dataset[id_shuffled], target_dataset[id_shuffled])
+        return input_dataset[id_shuffled], target_dataset[id_shuffled]
 
         #######################################################################
         #                       ** END OF YOUR CODE **
@@ -554,7 +554,7 @@ class Trainer(object):
         #######################################################################
         for epoch in range(self.nb_epoch):
             if self.shuffle_flag:
-                (shuffled_input_ds, shuffled_target_ds) = self.shuffle(input_dataset, target_dataset)
+                shuffled_input_ds, shuffled_target_ds = self.shuffle(input_dataset, target_dataset)
             len_ = len(shuffled_input_ds)
             size = len_ / self.batch_size if len_ % self.batch_size == 0 else len_ / self.batch_size + 1
             batches = np.split(shuffled_input_ds, size, axis=0)
@@ -588,11 +588,9 @@ class Trainer(object):
         #######################################################################
         #                       ** START OF YOUR CODE **
         #######################################################################
-        # zip_push = lambda li:zip(list(li),list(li)[1:])
         totalLoss = 0
         length = len(target_dataset)
         currIndex = 0
-        # for curr_ind,end_ind in zip_push(range(0,length,self.batch_size)):
 
         while (currIndex < length):
             endIndex = min(length, currIndex + self.batch_size)
