@@ -78,21 +78,12 @@ class Regressor():
         #fill NA with the mean value of the column
         if y is not None:
             y.fillna(y.mean())
-            # print(y.mean())
-            # y[:, :-1] = SimpleImputer().fit_transform(y[:, :-1])
             y = y.values
             y = y.astype(float)
         col_attributes = x.dtypes[x.dtypes != 'object'].index
-        # print(col_attributes)
-        # print(x[col_attributes])
-        # print(x.dtypes[x.dtypes != 'object'])
-        # print(x.dtypes)
-        # print(x[col_attributes].mean())
-        x[col_attributes] = x[col_attributes].fillna(x[col_attributes].mean())
-
+        
         #fill NA with the mean value of the column
-        # x.fillna(0)
-        # x[:, :-1] = SimpleImputer().fit_transform(x[:, :-1])
+        x[col_attributes].fillna(x[col_attributes].mean())
         x = x.values
         # print(x)
         col = x[:,-1]
