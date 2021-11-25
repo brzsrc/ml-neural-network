@@ -555,10 +555,12 @@ class Trainer(object):
         for epoch in range(self.nb_epoch):
             if self.shuffle_flag:
                 shuffled_input_ds, shuffled_target_ds = self.shuffle(input_dataset, target_dataset)
-            len_ = len(shuffled_input_ds)
+                input_dataset = shuffled_input_ds
+                target_dataset = shuffled_target_ds
+            len_ = len(input_dataset)
             size = len_ / self.batch_size if len_ % self.batch_size == 0 else len_ / self.batch_size + 1
-            batches = np.split(shuffled_input_ds, size, axis=0)
-            targets = np.split(shuffled_target_ds, size, axis=0)
+            batches = np.split(input_dataset, size, axis=0)
+            targets = np.split(target_dataset, size, axis=0)
             for i in range(len(batches)):
                 #Output: array of shape (batch_size, n_out)
                 output = self.network.forward(batches[i])
