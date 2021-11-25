@@ -30,7 +30,8 @@ class Regressor():
         #######################################################################
 
         # Replace this code with your own
-        self.preprocessor = None
+        self.x_preprocessor = None
+        self.y_preprocessor = None
         self.label_dict = None 
         X, _ = self._preprocessor(x, training = True)
         self.input_size = X.shape[1]
@@ -75,11 +76,6 @@ class Regressor():
         # Return preprocessed x and y, return None for y if it was None
         # return x, (y if isinstance(y, pd.DataFrame) else None)
 
-        #fill NA with the mean value of the column
-        if y is not None:
-            y.fillna(y.mean())
-            y = y.values
-            y = y.astype(float)
         col_attributes = x.dtypes[x.dtypes != 'object'].index
         
         #fill NA with the mean value of the column
@@ -104,16 +100,26 @@ class Regressor():
             self.label_dict = dict(zip(col_unique, col_bin))
             col_trans = [self.label_dict[elem] for elem in col]
             col_final = np.concatenate((col_left, col_trans), axis=1)
-            self.preprocessor = Preprocessor(col_final)
+            self.x_preprocessor = Preprocessor(col_final)
         else:
             col_trans = [self.label_dict[elem] for elem in col]
             col_final = np.concatenate((col_left, col_trans), axis=1)
 
-        data = self.preprocessor.apply(col_final)
-        # print(data)
-        # print(y)
-        data = data.astype(float)
-        return data, y
+        data_x = self.x_preprocessor.apply(col_final)
+        data_x = data_x.astype(float)
+        data_y = None
+
+         #fill NA with the mean value of the column
+        if y is not None:
+            y.fillna(y.mean())
+            y = y.values
+            # print("y:", y)
+            self.y_preprocessor = Preprocessor(y)
+            data_y = self.y_preprocessor.apply(y)
+            # print("data_y: ", data_y)
+            data_y = data_y.astype(float)
+
+        return data_x, data_y
 
         #######################################################################
         #                       ** END OF YOUR CODE **
@@ -139,7 +145,7 @@ class Regressor():
 
         X, Y = self._preprocessor(x, y = y, training = True) # Do not forget
         # print(X.dtype)
-        # print(Y)
+        # print("Y = ", Y)
         # X = X.astype(float)
         # Y = Y.astype(float)
         x_train_tensor = torch.from_numpy(X).float()
@@ -147,22 +153,30 @@ class Regressor():
 
         self.criterion = torch.nn.MSELoss()
         self.model = LinearRegression((np.shape(X)[1]))
+
         self.optimiser = torch.optim.SGD(self.model.parameters(), lr=0.0001)
         for epoch in range(self.nb_epoch):
             # Reset the gradients 
             self.optimiser.zero_grad()   
 
+            print("x_tain_tensor: ", x_train_tensor)
             # forward pass
-            y_hat = self.model(x_train_tensor)
+            y_hat = self.model.forward(x_train_tensor)
+
+            print("y_hat: ", y_hat)
+            print("y_train_tensor", y_train_tensor)
 
             # compute loss
             loss = self.criterion(y_hat, y_train_tensor) 
+            print("loss: ", loss)
 
             # Backward pass (compute the gradients)
             loss.backward()
 
             # update parameters
             self.optimiser.step() 
+
+            print(f"Epoch: {epoch}\t w: {self.model.linear.weight.data[0]}\t b: {self.model.linear.bias.data[0]:.4f} \t L: {loss:.4f}")
         return self
 
         #######################################################################
@@ -189,7 +203,7 @@ class Regressor():
 
         X, _ = self._preprocessor(x, training = False) # Do not forget
         x_predicted_tensor = torch.from_numpy(X).float()
-        #print(x_predicted_tensor)
+        # print(x_predicted_tensor)
         y_predicted = self.model.forward(x_predicted_tensor)
         # print(y_predicted)
         # print(torch.nan_to_num(y_predicted))
@@ -280,6 +294,8 @@ class LinearRegression(nn.Module):
     #     self.linear = nn.Linear(n_input_vars, n_output_vars)
         
     def forward(self, x):
+        # print("x: ", x)
+        # print(self.linear(x))
         return self.linear(x)
 
 def example_main():
@@ -309,7 +325,7 @@ def example_main():
     regressor.fit(x_train, y_train)
     save_regressor(regressor)
 
-    # regressor.predict(x_train)
+    regressor.predict(x_train)
     # Error
     error = regressor.score(x_train, y_train)
     print("\nRegressor error: {}\n".format(error))
