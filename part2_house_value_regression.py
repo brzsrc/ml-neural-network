@@ -31,7 +31,7 @@ class Regressor():
 
         # Replace this code with your own
         self.x_preprocessor = None
-        self.y_preprocessor = None
+        # self.y_preprocessor = None
         self.label_dict = None 
         X, _ = self._preprocessor(x, training = True)
         self.input_size = X.shape[1]
@@ -114,10 +114,10 @@ class Regressor():
             y = y.fillna(y.mean())
             y = y.values
             # print("y:", y)
-            self.y_preprocessor = Preprocessor(y)
-            data_y = self.y_preprocessor.apply(y)
+            #self.y_preprocessor = Preprocessor(y)
+            #data_y = self.y_preprocessor.apply(y)
             # print("data_y: ", data_y)
-            data_y = data_y.astype(float)
+            data_y = y.astype(float)
 
         return data_x, data_y
 
@@ -154,21 +154,21 @@ class Regressor():
         self.criterion = torch.nn.MSELoss()
         self.model = LinearRegression((np.shape(X)[1]))
 
-        self.optimiser = torch.optim.SGD(self.model.parameters(), lr=0.0001)
+        self.optimiser = torch.optim.SGD(self.model.parameters(), lr=0.01)
         for epoch in range(self.nb_epoch):
             # Reset the gradients 
             self.optimiser.zero_grad()   
 
-            print("x_tain_tensor: ", x_train_tensor)
+            #print("x_tain_tensor: ", x_train_tensor)
             # forward pass
             y_hat = self.model.forward(x_train_tensor)
 
-            print("y_hat: ", y_hat)
-            print("y_train_tensor", y_train_tensor)
+            # print("y_hat: ", y_hat)
+            # print("y_train_tensor", y_train_tensor)
 
             # compute loss
             loss = self.criterion(y_hat, y_train_tensor) 
-            print("loss: ", loss)
+            #print("loss: ", loss)
 
             # Backward pass (compute the gradients)
             loss.backward()
@@ -176,7 +176,7 @@ class Regressor():
             # update parameters
             self.optimiser.step() 
 
-            print(f"Epoch: {epoch}\t w: {self.model.linear.weight.data[0]}\t b: {self.model.linear.bias.data[0]:.4f} \t L: {loss:.4f}")
+            # print(f"Epoch: {epoch}\t w: {self.model.linear.weight.data[0]}\t b: {self.model.linear.bias.data[0]:.4f} \t L: {loss:.4f}")
         return self
 
         #######################################################################
