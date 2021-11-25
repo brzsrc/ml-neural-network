@@ -6,7 +6,6 @@ import pickle
 import numpy as np
 import pandas as pd
 from sklearn.preprocessing import LabelBinarizer
-from sklearn.impute import SimpleImputer
 
 class Regressor():
 
@@ -199,7 +198,7 @@ class Regressor():
 
         X, _ = self._preprocessor(x, training = False) # Do not forget
         x_predicted_tensor = torch.from_numpy(X).float()
-        print(x_predicted_tensor)
+        #print(x_predicted_tensor)
         y_predicted = self.model.forward(x_predicted_tensor)
         # print(y_predicted)
         # print(torch.nan_to_num(y_predicted))
