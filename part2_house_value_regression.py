@@ -13,7 +13,7 @@ pd.options.mode.chained_assignment = None  # default='warn'
 
 class Regressor():
 
-    def __init__(self, x, nb_epoch=7000, neurons=[32,16,8,1], activations=["relu", "relu", "relu", "identity"], 
+    def __init__(self, x, nb_epoch=1000, neurons=[32,16,8,1], activations=["relu", "relu", "relu", "identity"], 
         criterion=nn.MSELoss(), optimiser_name=None, learning_rate=None):
         # You can add any input parameters you need
         # Remember to set them with a default value for LabTS tests
@@ -366,7 +366,7 @@ class LinearRegression(nn.Module):
 
 
 def example_main():
-
+    
     output_label = "median_house_value"
 
     # Use pandas to read CSV data as it contains various object types
@@ -413,3 +413,6 @@ def example_main():
 
 if __name__ == "__main__":
     example_main()
+
+
+

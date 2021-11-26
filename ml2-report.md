@@ -1,4 +1,6 @@
-### Description of the model
+## ML-CW2-PART2_REPORT
+
+### 1. Description of the model
 
 1. For the regressor model, we use a MultiLayerNetwork and the PyTorch neural network library, as MultiLayerNetwork should give a better performance compared with single layer LinearRegression model and with functions provided by Pytorch neural network library, it is much easier and efficient to implement the training and evaluation steps.
 
@@ -8,7 +10,7 @@
    - Textual attribute in the data will be encoded to an array with only 0, 1 in it, using one-hot encoding. We replace the textual attribute in the dataset with the array
    - Data with type numpy.ndarray will be returned.
 
-### Description of the evaluation setup.
+### 2. Description of the evaluation setup.
 
 In this part we evaluated our neural network with “Root Mean Squared Error” (MSE), which calculates the score with the differences between values predicted and the actual desired values.
 
@@ -22,7 +24,7 @@ We chose RMSE as our score because it ranges from 0 to +infinity and indifferent
 
 We also divided the whole dataset into training dataset and validation dataset at a ratio of 8:2. So that we can train the model by the training dataset and use the validation dataset to evaluate the model.
 
-### Information about the hyperparameter search
+### 3. Information about the hyperparameter search
 
 1. ***optimizer & loss function***
 
@@ -73,5 +75,23 @@ We also divided the whole dataset into training dataset and validation dataset a
 
    
 
-### Final evaluation of your best model
+### 4. Final evaluation of your best model
+
+*The best hyperparameters we tuned from our search function:*
+
+Learning_rate = 0.01
+
+Loss_function = MSE
+
+optimiser = Adam
+
+nb_epoch = 3000
+
+activation = Relu
+
+Number of layers in the network = 4
+
+Neurons in each layer = [32, 16, 8, 1]
+
+
 
