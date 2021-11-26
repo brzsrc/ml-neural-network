@@ -1,7 +1,6 @@
 from part1_nn_lib import Preprocessor
 import torch
 import torch.nn as nn
-import torch.nn.functional as F
 import pickle
 import numpy as np
 import pandas as pd
@@ -16,12 +15,12 @@ class Regressor():
     def __init__(self, x, nb_epoch=1000, model=None, criterion=None, optimiser=None):
         # You can add any input parameters you need
         # Remember to set them with a default value for LabTS tests
-        """ 
+        """
         Initialise the model.
 
         Arguments:
-            - x {pd.DataFrame} -- Raw input data of shape 
-                (batch_size, input_size), used to compute the size 
+            - x {pd.DataFrame} -- Raw input data of shape
+                (batch_size, input_size), used to compute the size
                 of the network.
             - nb_epoch {int} -- number of epoch to train the network.
 
@@ -54,14 +53,14 @@ class Regressor():
         #######################################################################
 
     def _preprocessor(self, x, y=None, training=False):
-        """ 
+        """
         Preprocess input of the network.
 
         Arguments:
-            - x {pd.DataFrame} -- Raw input array of shape 
+            - x {pd.DataFrame} -- Raw input array of shape
                 (batch_size, input_size).
             - y {pd.DataFrame} -- Raw target array of shape (batch_size, 1).
-            - training {boolean} -- Boolean indicating if we are training or 
+            - training {boolean} -- Boolean indicating if we are training or
                 testing the model.
 
         Returns:
@@ -132,7 +131,7 @@ class Regressor():
         Regressor training function
 
         Arguments:
-            - x {pd.DataFrame} -- Raw input array of shape 
+            - x {pd.DataFrame} -- Raw input array of shape
                 (batch_size, input_size).
             - y {pd.DataFrame} -- Raw output array of shape (batch_size, 1).
 
@@ -151,32 +150,25 @@ class Regressor():
         # Y = Y.astype(float)
         x_train_tensor = torch.from_numpy(X).float()
         y_train_tensor = torch.from_numpy(Y).float()
-
-        self.criterion = torch.nn.MSELoss()
-        self.model = LinearRegression(np.shape(X)[1], neurons=[32, 16, 8, 1], activations=["relu", "relu", "relu", "relu"])
-        self.optimiser = torch.optim.Adam(self.model.parameters(), lr=0.001)
-        for epoch in range(self.nb_epoch):
+        #build network
+        self.model = LinearRegression(np.shape(X)[1], n_output_vars=1)
+        #set optimizer
+        self.optimizer = torch.optim.Adam(self.model.parameters(), lr=0.01)
+        #set loss function
+        self.criterion = nn.MSELoss()
+        for i in range(self.nb_epoch):
+            #train
+            self.model.train()
+            y_pred = self.model(x_train_tensor)
             # Reset the gradients
-            self.optimiser.zero_grad()
-
-            #print("x_tain_tensor: ", x_train_tensor)
-            # forward pass
-            y_hat = self.model(x_train_tensor)
-
-            # print("y_hat: ", y_hat)
-            # print("y_train_tensor", y_train_tensor)
-
+            self.optimizer.zero_grad()
             # compute loss
-            loss = self.criterion(y_hat, y_train_tensor)
-            # print("loss: ", loss)
-
+            loss = self.criterion(y_pred, y_train_tensor)
             # Backward pass (compute the gradients)
             loss.backward()
-
             # update parameters
-            self.optimiser.step()
+            self.optimizer.step()
 
-            # print(f"Epoch: {epoch}\t w: {self.model.linear.weight.data[0]}\t b: {self.model.linear.bias.data[0]:.4f} \t L: {loss:.4f}")
         return self
 
         #######################################################################
@@ -188,7 +180,7 @@ class Regressor():
         Ouput the value corresponding to an input x.
 
         Arguments:
-            x {pd.DataFrame} -- Raw input array of shape 
+            x {pd.DataFrame} -- Raw input array of shape
                 (batch_size, input_size).
 
         Returns:
@@ -218,7 +210,7 @@ class Regressor():
         Function to evaluate the model accuracy on a validation dataset.
 
         Arguments:
-            - x {pd.DataFrame} -- Raw input array of shape 
+            - x {pd.DataFrame} -- Raw input array of shape
                 (batch_size, input_size).
             - y {pd.DataFrame} -- Raw ouput array of shape (batch_size, 1).
 
@@ -237,7 +229,6 @@ class Regressor():
         # print(x_predicted_tensor)
         y_predicted = self.model.forward(x_predicted_tensor)
         y_predicted = y_predicted.detach().numpy()
-        # loss = mean_absolute_error(Y, y_predicted)
         loss = mean_squared_error(Y, y_predicted)**0.5
         return loss  # Replace this code with your own
 
@@ -247,7 +238,7 @@ class Regressor():
 
 
 def save_regressor(trained_model):
-    """ 
+    """
     Utility function to save the trained regressor model in part2_model.pickle.
     """
     # If you alter this, make sure it works in tandem with load_regressor
@@ -257,7 +248,7 @@ def save_regressor(trained_model):
 
 
 def load_regressor():
-    """ 
+    """
     Utility function to load the trained regressor model in part2_model.pickle.
     """
     # If you alter this, make sure it works in tandem with save_regressor
@@ -270,14 +261,14 @@ def load_regressor():
 def RegressorHyperParameterSearch():
     # Ensure to add whatever inputs you deem necessary to this function
     """
-    Performs a hyper-parameter for fine-tuning the regressor implemented 
+    Performs a hyper-parameter for fine-tuning the regressor implemented
     in the Regressor class.
 
     Arguments:
         Add whatever inputs you need.
 
     Returns:
-        The function should return your optimised hyper-parameters. 
+        The function should return your optimised hyper-parameters.
 
     """
 
@@ -292,55 +283,19 @@ def RegressorHyperParameterSearch():
     #######################################################################
 
 
-class LinearRegression(nn.Module):
-    def __init__(self, n_input_vars, neurons=None, activations=None):
-        super().__init__()  # call constructor of superclass
-        # self.hiddenlayer1 = nn.Linear(n_input_vars, 16)
-        # self.hiddenlayer2 = nn.Linear(16,20)
-        # self.hiddenlayer3 = nn.Linear(20,5)
-        # self.output = nn.Linear(5,1)
-        # self.linear = nn.Linear(n_input_vars, n_output_vars)
+def LinearRegression(n_input_vars, n_output_vars=1):
+        model = nn.Sequential(
+            nn.Linear(n_input_vars, 32),
+            nn.ReLU(),
+            nn.Linear(32, 16),
+            nn.ReLU(),
+            nn.Linear(16, 8),
+            nn.ReLU(),
+            nn.Linear(8, 1))
 
-        """
-        - neurons {list} -- Number of neurons in each linear layer 
-                represented as a list. The length of the list determines the 
-                number of linear layers.
-        - activations {list} -- List of the activation functions to apply 
-                to the output of each linear layer.
-        """
-        self.neurons = neurons
-        self.activations = activations
-
-        self.layers = nn.ModuleList()
-        # The first layer should between the input and the first neuron
-        self.layers.append(nn.Linear(n_input_vars, self.neurons[0]))
-        for i in range(len(neurons) - 1):
-            layer = nn.Linear(neurons[i], neurons[i + 1])
-            self.layers.append(layer)
-        # print(self.layers)
+        return model
 
 
-    # def set(self, n_input_vars, n_output_vars=1):
-    #     self.linear = nn.Linear(n_input_vars, n_output_vars)
-
-    def forward(self, x):
-        # print("x: ", x)
-        # print(self.linear(x))
-        # h1 = torch.relu(self.hiddenlayer1(x))
-        # h2 = torch.relu(self.hiddenlayer2(h1))
-        # h3 = torch.relu(self.hiddenlayer3(h2))
-        # output = torch.relu(self.output(h3))
-
-        output = x
-        for i in range(len(self.layers)):
-            # Add activation layer if exist
-            if self.activations[i] == "sigmoid":
-                output = torch.sigmoid(self.layers[i](output))
-            elif self.activations[i] == "relu":
-                output = torch.relu(self.layers[i](output))
-
-        return output
-        # return self.linear(x)
 
 
 def example_main():
@@ -360,21 +315,15 @@ def example_main():
     x_train, x_test, y_train, y_test = train_test_split(x, y,
                                                         test_size=0.2,
                                                         random_state=0)
-    # criterion = torch.nn.MSELoss()
-    # criterion = torch.nn.MSELoss(reduction="sum") # for SSE
-    # model = LinearRegression()
-    # optimiser = torch.optim.SGD(model.parameters(), lr=0.0001)
 
     # Training
     # This example trains on the whole available dataset.
     # You probably want to separate some held-out data
     # to make sure the model isn't overfitting
-    # regressor = Regressor(x, nb_epoch = 10, model = model, criterion = criterion, optimiser = optimiser)
-    regressor = Regressor(x_train, nb_epoch=5000)
+    regressor = Regressor(x_train, nb_epoch=7500)
     regressor.fit(x_train, y_train)
     save_regressor(regressor)
 
-#    regressor.predict(x_train)
     # Error
     error = regressor.score(x_test, y_test)
     print("\nRegressor error: {}\n".format(error))
