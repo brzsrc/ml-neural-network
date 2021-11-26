@@ -6,7 +6,7 @@ import pickle
 import numpy as np
 import pandas as pd
 from sklearn.preprocessing import LabelBinarizer
-from sklearn.metrics import mean_absolute_error
+from sklearn.metrics import mean_absolute_error, mean_squared_error
 
 pd.options.mode.chained_assignment = None  # default='warn'
 
@@ -153,8 +153,8 @@ class Regressor():
         y_train_tensor = torch.from_numpy(Y).float()
 
         self.criterion = torch.nn.MSELoss()
-        self.model = LinearRegression(np.shape(X)[1], neurons=[16, 20, 5, 1], activations=["relu", "relu", "relu", "relu"])
-        self.optimiser = torch.optim.SGD(self.model.parameters(), lr=0.001)
+        self.model = LinearRegression(np.shape(X)[1], neurons=[32, 16, 8, 1], activations=["relu", "relu", "relu", "relu"])
+        self.optimiser = torch.optim.Adam(self.model.parameters(), lr=0.001)
         for epoch in range(self.nb_epoch):
             # Reset the gradients
             self.optimiser.zero_grad()
@@ -237,7 +237,8 @@ class Regressor():
         # print(x_predicted_tensor)
         y_predicted = self.model.forward(x_predicted_tensor)
         y_predicted = y_predicted.detach().numpy()
-        loss = mean_absolute_error(Y, y_predicted)
+        # loss = mean_absolute_error(Y, y_predicted)
+        loss = mean_squared_error(Y, y_predicted)**0.5
         return loss  # Replace this code with your own
 
         #######################################################################
