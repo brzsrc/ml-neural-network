@@ -179,7 +179,7 @@ class ReluLayer(Layer):
         #                       ** START OF YOUR CODE **
         #######################################################################
 
-        self._cache_current = x if np.all(x > 0) else np.zeros(x.shape)
+        self._cache_current = np.maximum(x,np.zeros(x.shape))
         return self._cache_current
 
         #######################################################################
