@@ -293,6 +293,24 @@ def RegressorHyperParameterSearch(regressor, x_train, x_test, y_train, y_test,
     #     avgError = totalErrors / 10
     #     print("avgError :", avgError)
 
+    for lr in learning_rate_list:
+        regressor.learning_rate = lr
+        print("learning_rate = ", lr)
+        for nb_epoch in nb_epoch_list:
+            i = 0
+            totalErrors = 0.0
+            regressor.nb_epoch = nb_epoch
+            while i < 10:
+                regressor.fit(x_train, y_train)
+                error = regressor.score(x_test, y_test)
+                # print("i :", i)
+                # print("\nRegressor error: {}\n".format(error))
+                totalErrors += error
+                i += 1
+            avgError = totalErrors / 10
+            print("nb_epoch = ", nb_epoch)
+            print("avgError :", avgError)
+
     # Cause we have already decided the best optimiser('Adam') and loss function('MSE')
     # for lr in learning_rate_list:
     #     regressor.learning_rate = lr
