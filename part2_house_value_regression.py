@@ -13,7 +13,7 @@ pd.options.mode.chained_assignment = None  # default='warn'
 
 class Regressor():
 
-    def __init__(self, x, nb_epoch=1000, neurons=[32,16,8,1], activations=["relu", "relu", "relu", "identity"], 
+    def __init__(self, x, nb_epoch=7000, neurons=[32,16,8,1], activations=["relu", "relu", "relu", "identity"], 
         criterion=nn.MSELoss(), optimiser_name=None, learning_rate=None):
         # You can add any input parameters you need
         # Remember to set them with a default value for LabTS tests
@@ -259,39 +259,37 @@ def RegressorHyperParameterSearch(regressor, x_train, x_test, y_train, y_test,
     #                       ** START OF YOUR CODE **
     #######################################################################
 
-    # for criterion in criterion_list:
-    #     for optimiser in optimiser_list:
-    #         i = 0
-    #         totalErrors = 0.0
-    #         while i < 5:
-    #             regressor.criterion = criterion
-    #             regressor.optimiser = optimiser
-    #             # print(regressor.criterion)
-    #             # print(regressor.optimiser)
-    #             regressor.fit(x_train, y_train)
-    #             error = regressor.score(x_test, y_test)
-    #             print("i :", i)
-    #             print("\nRegressor error: {}\n".format(error))
-    #             totalErrors += error
-    #             i += 1
+    for criterion in criterion_list:
+        for optimiser in optimiser_list:
+            i = 0
+            totalErrors = 0.0
+            while i < 5:
+                regressor.criterion = criterion
+                regressor.optimiser_name = optimiser
+                regressor.fit(x_train, y_train)
+                error = regressor.score(x_test, y_test)
+                print("i :", i)
+                print("\nRegressor error: {}\n".format(error))
+                totalErrors += error
+                i += 1
 
-    #         avgError = totalErrors / 5
-    #         print("avgError :", avgError)
+            avgError = totalErrors / 5
+            print("avgError :", avgError)
 
-    # for nb_epoch in nb_epoch_list:
-    #     i = 0
-    #     totalErrors = 0.0
-    #     regressor.nb_epoch = nb_epoch
-    #     while i < 10:
-    #         regressor.fit(x_train, y_train)
-    #         error = regressor.score(x_test, y_test)
-    #         print("i :", i)
-    #         print("\nRegressor error: {}\n".format(error))
-    #         totalErrors += error
-    #         i += 1
+    for nb_epoch in nb_epoch_list:
+        i = 0
+        totalErrors = 0.0
+        regressor.nb_epoch = nb_epoch
+        while i < 10:
+            regressor.fit(x_train, y_train)
+            error = regressor.score(x_test, y_test)
+            print("i :", i)
+            print("\nRegressor error: {}\n".format(error))
+            totalErrors += error
+            i += 1
 
-    #     avgError = totalErrors / 10
-    #     print("avgError :", avgError)
+        avgError = totalErrors / 10
+        print("avgError :", avgError)
 
     for lr in learning_rate_list:
         regressor.learning_rate = lr
@@ -310,22 +308,6 @@ def RegressorHyperParameterSearch(regressor, x_train, x_test, y_train, y_test,
             avgError = totalErrors / 10
             print("nb_epoch = ", nb_epoch)
             print("avgError :", avgError)
-
-    # Cause we have already decided the best optimiser('Adam') and loss function('MSE')
-    # for lr in learning_rate_list:
-    #     regressor.learning_rate = lr
-    #     i = 0
-    #     totalErrors = 0.0
-    #     while i < 5:
-    #         regressor.fit(x_train, y_train)
-    #         error = regressor.score(x_test, y_test)
-    #         print("i :", i)
-    #         print("\nRegressor error: {}\n".format(error))
-    #         totalErrors += error
-    #         i += 1
-
-    #     avgError = totalErrors / 5
-    #     print("avgError :", avgError)
 
     for i in range(len(neurons_list)):
         regressor.neurons = neurons_list[i]
@@ -408,25 +390,25 @@ def example_main():
 
     # neurons_list=[[32,16,8,1], [64,32,16,8,1], [48,24,12,6,1]]
     # activations_list=[["relu", "relu", "relu", "identity"], ["relu", "relu", "relu", "identity"], ["relu", "relu", "relu", "identity"]]
-    neurons_list=[[64,32,16,8,1]]
+    neurons_list=[[64,32,16,8,1], [128, 64, 32, ], [], []]
     activations_list=[["relu", "relu", "relu", "relu", "relu"]]
  
     nb_epoch_list=[1000, 2000, 3000, 4000, 5000, 6000, 7000, 8000]
-    criterion_list = ["MSE", "MAE"]
+    criterion_list = [nn.MSELoss(), nn.L1Loss()]
     optimiser_list = ["Adam", "SGD"]
     learning_rate_list = [0.0001, 0.001, 0.01, 0.02, 0.1, 0.2]
     regressor = Regressor(x_train)
-    RegressorHyperParameterSearch(regressor, x_train, x_test, y_train, y_test, 
-        nb_epoch_list=nb_epoch_list, criterion_list=criterion_list, 
-        optimiser_list=optimiser_list, learning_rate_list=learning_rate_list,
-        neurons_list=neurons_list, activations_list=activations_list)
+    # RegressorHyperParameterSearch(regressor, x_train, x_test, y_train, y_test, 
+    #     nb_epoch_list=nb_epoch_list, criterion_list=criterion_list, 
+    #     optimiser_list=optimiser_list, learning_rate_list=learning_rate_list,
+    #     neurons_list=neurons_list, activations_list=activations_list)
     
-    # regressor.fit(x_train, y_train)
-    # save_regressor(regressor)
+    regressor.fit(x_train, y_train)
+    save_regressor(regressor)
 
     # Error
-    # error = regressor.score(x_test, y_test)
-    # print("\nRegressor error: {}\n".format(error))
+    error = regressor.score(x_test, y_test)
+    print("\nRegressor error: {}\n".format(error))
 
 
 if __name__ == "__main__":
