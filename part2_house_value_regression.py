@@ -5,7 +5,7 @@ import pickle
 import numpy as np
 import pandas as pd
 from sklearn.preprocessing import LabelBinarizer
-from sklearn.metrics import mean_absolute_error, mean_squared_error
+from sklearn.metrics import  mean_squared_error
 
 pd.options.mode.chained_assignment = None  # default='warn'
 
@@ -31,7 +31,7 @@ class Regressor():
         #######################################################################
         #                       ** START OF YOUR CODE **
         #######################################################################
-
+        self.lr = 0.01
         # Replace this code with your own
         self.x_preprocessor = None
         # self.y_preprocessor = None
@@ -144,21 +144,18 @@ class Regressor():
         #######################################################################
 
         X, Y = self._preprocessor(x, y=y, training=True)  # Do not forget
-        # print(X.dtype)
-        # print("Y = ", Y)
-        # X = X.astype(float)
-        # Y = Y.astype(float)
+
         x_train_tensor = torch.from_numpy(X).float()
         y_train_tensor = torch.from_numpy(Y).float()
         #build network
         self.model = LinearRegression(np.shape(X)[1], neurons=[32,16,8,1], activations=["relu", "relu", "relu", "identity"])
         #set optimizer
-        self.optimizer = torch.optim.Adam(self.model.parameters(), lr=0.01)
+        self.optimizer = torch.optim.Adam(self.model.parameters(), self.lr)
         #set loss function
         self.criterion = nn.MSELoss()
         for i in range(self.nb_epoch):
             #train
-            self.model.train()
+            #self.model.train()
             y_pred = self.model(x_train_tensor)
             # Reset the gradients
             self.optimizer.zero_grad()
@@ -225,9 +222,7 @@ class Regressor():
 
         X, Y = self._preprocessor(x, y=y, training=False)  # Do not forget
         x_predicted_tensor = torch.from_numpy(X).float()
-        y_validation_tensor = torch.from_numpy(Y).float()
-        # print(x_predicted_tensor)
-        y_predicted = self.model.forward(x_predicted_tensor)
+        y_predicted = self.model(x_predicted_tensor)
         y_predicted = y_predicted.detach().numpy()
         loss = mean_squared_error(Y, y_predicted)**0.5
         return loss  # Replace this code with your own
@@ -385,6 +380,7 @@ def example_main():
     x = data.loc[:, data.columns != output_label]
     y = data.loc[:, [output_label]]
 
+    # Spliting dataset
     from sklearn.model_selection import train_test_split
     x_train, x_test, y_train, y_test = train_test_split(x, y,
                                                         test_size=0.2,
