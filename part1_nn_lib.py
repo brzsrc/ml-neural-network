@@ -339,13 +339,13 @@ class MultiLayerNetwork(object):
         # The first layer should between the input and the first neuron
         self._layers.append(LinearLayer(input_dim, neurons[0]))
         for i in range(len(neurons) - 1):
-            layer = LinearLayer(neurons[i], neurons[i + 1])
-            self._layers.append(layer)
             # Add activation layer if exist
             if self.activations[i] == "sigmoid":
                 self._layers.append(SigmoidLayer())
             elif self.activations[i] == "relu":
                 self._layers.append(ReluLayer())
+            layer = LinearLayer(neurons[i], neurons[i + 1])
+            self._layers.append(layer)
 
         
         #######################################################################

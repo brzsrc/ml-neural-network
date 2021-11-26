@@ -151,7 +151,7 @@ class Regressor():
         x_train_tensor = torch.from_numpy(X).float()
         y_train_tensor = torch.from_numpy(Y).float()
         #build network
-        self.model = LinearRegression(np.shape(X)[1], n_output_vars=1)
+        self.model = LinearRegression(np.shape(X)[1], neurons=[32,16,8,1], activations=["relu", "relu", "relu", "identity"])
         #set optimizer
         self.optimizer = torch.optim.Adam(self.model.parameters(), lr=0.01)
         #set loss function
@@ -283,17 +283,91 @@ def RegressorHyperParameterSearch():
     #######################################################################
 
 
-def LinearRegression(n_input_vars, n_output_vars=1):
-        model = nn.Sequential(
-            nn.Linear(n_input_vars, 32),
-            nn.ReLU(),
-            nn.Linear(32, 16),
-            nn.ReLU(),
-            nn.Linear(16, 8),
-            nn.ReLU(),
-            nn.Linear(8, 1))
+# def LinearRegression(n_input_vars, ):
+#         model = nn.Sequential(
+#             nn.Linear(n_input_vars, 32),
+#             nn.ReLU(),
+#             nn.Linear(32, 16),
+#             nn.ReLU(),
+#             nn.Linear(16, 8),
+#             nn.ReLU(),
+#             nn.Linear(8, 1))
 
-        return model
+#         return model
+
+# def LinearRegression(n_input_vars, neurons=None, activations=None):
+#     """
+#     - neurons {list} -- Number of neurons in each linear layer 
+#             represented as a list. The length of the list determines the 
+#             number of linear layers.
+#     - activations {list} -- List of the activation functions to apply 
+#             to the output of each linear layer.
+#     """
+#     layers = nn.ModuleList()
+#     # The first layer should between the input and the first neuron
+#     layers.append(nn.Linear(n_input_vars, neurons[0]))
+#     for i in range(len(neurons) - 1):
+#         if activations[i] == "sigmoid":
+#             layers.append(nn.Sigmoid())
+#         elif activations[i] == "relu":
+#             layers.append(torch.nn.ReLu())
+#         layer = nn.Linear(neurons[i], neurons[i + 1])
+#         layers.append(layer)
+
+#     model = nn.Sequential(*layers)
+#     return model
+
+class LinearRegression(nn.Module):
+    def __init__(self, n_input_vars, neurons=None, activations=None):
+        super().__init__()  # call constructor of superclass
+        # self.hiddenlayer1 = nn.Linear(n_input_vars, 16)
+        # self.hiddenlayer2 = nn.Linear(16,20)
+        # self.hiddenlayer3 = nn.Linear(20,5)
+        # self.output = nn.Linear(5,1)
+        # self.linear = nn.Linear(n_input_vars, n_output_vars)
+
+        """
+        - neurons {list} -- Number of neurons in each linear layer 
+                represented as a list. The length of the list determines the 
+                number of linear layers.
+        - activations {list} -- List of the activation functions to apply 
+                to the output of each linear layer.
+        """
+        self.neurons = neurons
+        self.activations = activations
+
+        self.layers = nn.ModuleList()
+        # The first layer should between the input and the first neuron
+        self.layers.append(nn.Linear(n_input_vars, self.neurons[0]))
+        for i in range(len(neurons) - 1):
+            layer = nn.Linear(neurons[i], neurons[i + 1])
+            self.layers.append(layer)
+        # print(self.layers)
+
+
+    # def set(self, n_input_vars, n_output_vars=1):
+    #     self.linear = nn.Linear(n_input_vars, n_output_vars)
+
+    def forward(self, x):
+        # print("x: ", x)
+        # print(self.linear(x))
+        # h1 = torch.relu(self.hiddenlayer1(x))
+        # h2 = torch.relu(self.hiddenlayer2(h1))
+        # h3 = torch.relu(self.hiddenlayer3(h2))
+        # output = torch.relu(self.output(h3))
+
+        output = x
+        for i in range(len(self.layers)):
+            # Add activation layer if exist
+            if self.activations[i] == "sigmoid":
+                output = torch.sigmoid(self.layers[i](output))
+            elif self.activations[i] == "relu":
+                output = torch.relu(self.layers[i](output))
+            else:
+                output = self.layers[i](output)
+
+        return output
+        # return self.linear(x)
 
 
 
