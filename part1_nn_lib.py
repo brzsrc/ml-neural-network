@@ -346,6 +346,10 @@ class MultiLayerNetwork(object):
                 self._layers.append(ReluLayer())
             layer = LinearLayer(neurons[i], neurons[i + 1])
             self._layers.append(layer)
+        if self.activations[len(neurons) - 1] == "sigmoid":
+            self._layers.append(SigmoidLayer())
+        elif self.activations[len(neurons) - 1] == "relu":
+            self._layers.append(ReluLayer())
 
         
         #######################################################################
